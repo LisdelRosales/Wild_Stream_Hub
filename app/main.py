@@ -1,5 +1,21 @@
+
+import os
 import logging
+from fastapi import FastAPI, Request, status, Header, Depends, HTTPException
+from fastapi.responses import JSONResponse
+from pydantic import BaseModel
+from app.utils import PATHS, ensure_dirs, read_config, write_config
 from app.ffmpeg_manager import FFmpegManager
+
+API_TOKEN = os.environ.get("WILDSTREAM_API_TOKEN", "changeme123")
+
+def verify_token(x_api_token: str = Header(...)):
+    if x_api_token != API_TOKEN:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+app = FastAPI()
+ensure_dirs()
+
 logging.basicConfig(
     filename=os.path.join(PATHS["logs"], "wildstream.log"),
     level=logging.INFO,
@@ -7,26 +23,6 @@ logging.basicConfig(
 )
 
 ffmpeg_manager = FFmpegManager()
-@app.get("/status")
-def status(list_name: str = None, authorization: str = Header(None)):
-    check_auth(authorization)
-    status = ffmpeg_manager.status(list_name)
-    return {"status": status}
-from fastapi import FastAPI, Request, status, Header
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-import os
-from app.utils import PATHS, ensure_dirs, read_config, write_config
-
-
-API_TOKEN = os.environ.get("WILDSTREAM_API_TOKEN", "changeme123")
-app = FastAPI()
-ensure_dirs()
-
-def check_auth(authorization: str = Header(None)):
-    if not authorization or authorization != f"Bearer {API_TOKEN}":
-        from fastapi import HTTPException
-        raise HTTPException(status_code=401, detail="No autorizado")
 
 class CreateListRequest(BaseModel):
     list_name: str
