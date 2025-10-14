@@ -57,15 +57,20 @@ EOF
 sudo systemctl daemon-reload
 sudo systemctl enable --now wildstream.service
 
-# 7. Mostrar estado
-echo "\n✅ Wild_Stream_Hub instalado y corriendo en $BASE_PATH"
-echo "Puedes acceder al backend en http://<IP_DE_TU_SERVER>:8000"
-echo "Recuerda usar el token configurado en el header X-API-TOKEN para las peticiones."
-
+# 7. Mostrar estado y URL real
 if systemctl is-active --quiet wildstream; then
-  echo -e "\n✅ Wild_Stream_Hub instalado y corriendo en $BASE_PATH"
-  echo "Puedes acceder al backend en http://<IP_DE_TU_SERVER>:8000"
-  echo "Recuerda usar el token configurado en el header X-API-TOKEN para las peticiones."
+  # Detectar IP local (la primera no-loopback IPv4)
+  LOCAL_IP=$(hostname -I | awk '{print $1}')
+  PORT=8000
+  # Verificar si el puerto está escuchando
+  if command -v nc >/dev/null 2>&1 && nc -z "$LOCAL_IP" $PORT; then
+    echo -e "\n✅ Wild_Stream_Hub instalado y corriendo en $BASE_PATH"
+    echo "Puedes acceder al backend en: http://$LOCAL_IP:$PORT"
+    echo "Recuerda usar el token configurado en el header X-API-TOKEN para las peticiones."
+  else
+    echo -e "\n⚠️ El servicio está activo pero el puerto $PORT no responde en $LOCAL_IP."
+    echo "Verifica logs y firewall."
+  fi
 else
   echo -e "\n❌ Wild_Stream_Hub NO se está ejecutando. Revisa los logs con:"
   echo "    sudo journalctl -u wildstream -e"
