@@ -58,8 +58,17 @@ sudo systemctl daemon-reload
 sudo systemctl enable --now wildstream.service
 
 # 7. Mostrar estado
-sudo systemctl status wildstream --no-pager
-
 echo "\n✅ Wild_Stream_Hub instalado y corriendo en $BASE_PATH"
 echo "Puedes acceder al backend en http://<IP_DE_TU_SERVER>:8000"
 echo "Recuerda usar el token configurado en el header X-API-TOKEN para las peticiones."
+
+if systemctl is-active --quiet wildstream; then
+  echo -e "\n✅ Wild_Stream_Hub instalado y corriendo en $BASE_PATH"
+  echo "Puedes acceder al backend en http://<IP_DE_TU_SERVER>:8000"
+  echo "Recuerda usar el token configurado en el header X-API-TOKEN para las peticiones."
+else
+  echo -e "\n❌ Wild_Stream_Hub NO se está ejecutando. Revisa los logs con:"
+  echo "    sudo journalctl -u wildstream -e"
+  echo "Y el estado con:"
+  echo "    sudo systemctl status wildstream"
+fi
