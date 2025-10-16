@@ -1,0 +1,17 @@
+# Wild Stream Hub - Example Video Playlist
+# One video file path per line
+# Lines starting with # are comments and will be ignored
+
+# Example paths (update with your actual video paths):
+/home/user/videos/intro.mp4
+/home/user/videos/main_content.mp4
+/home/user/videos/outro.mp4
+
+# You can use relative paths too (relative to where FFmpeg is run):
+# ./videos/video1.mp4
+# ./videos/video2.mp4
+
+# Supported formats: mp4, mkv, avi, mov, flv, etc.
+# Make sure files are readable: chmod +r /path/to/video.mp4
+
+

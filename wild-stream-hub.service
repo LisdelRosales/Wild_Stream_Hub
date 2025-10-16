@@ -1,0 +1,26 @@
+[Unit]
+Description=Wild Stream Hub - RTMP Stream Manager
+After=network.target
+
+[Service]
+Type=simple
+User=YOUR_USERNAME
+Group=YOUR_USERNAME
+WorkingDirectory=/path/to/wild_stream_hub/backend
+Environment="PATH=/path/to/wild_stream_hub/backend/venv/bin"
+ExecStart=/path/to/wild_stream_hub/backend/venv/bin/python main.py
+Restart=always
+RestartSec=10
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=wild-stream-hub
+
+[Install]
+WantedBy=multi-user.target
+
