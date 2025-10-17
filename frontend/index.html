@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wild Stream Hub - RTMP Stream Manager</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <div class="login-header">
+                <h2>🎬 Wild Stream Hub</h2>
+                <p>Login to manage your streams</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Login</button>
+                <div id="loginError" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="dashboard" class="hidden">
+        <!-- Header -->
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <h1>🎬 Wild Stream Hub</h1>
+                    <div class="header-actions">
+                        <span id="username-display" class="user-badge"></span>
+                        <button id="logoutBtn" class="btn btn-secondary">Logout</button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="container">
+            <!-- Stream Status Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📡 Stream Status</h2>
+                    <div id="streamStatusBadge" class="status-badge status-inactive">Inactive</div>
+                </div>
+                <div class="card-body">
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="label">Current Video:</span>
+                            <span id="currentVideo" class="value">-</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Bitrate:</span>
+                            <span id="bitrate" class="value">0 kb/s</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Uptime:</span>
+                            <span id="uptime" class="value">00:00:00</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">FFmpeg Status:</span>
+                            <span id="ffmpegStatus" class="value">Not Running</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream Lists Management Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>📁 Stream Lists</h2>
+                </div>
+                <div class="card-body">
+                    <div class="stream-lists-controls">
+                        <div class="form-group">
+                            <label for="newListName">Create New Stream List</label>
+                            <div class="input-group">
+                                <input type="text" id="newListName" name="newListName" 
+                                       placeholder="e.g., intro-videos" required>
+                                <button type="button" id="createListBtn" class="btn btn-primary">📁 Create</button>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="streamListSelect">Select Stream List for Transmission</label>
+                            <select id="streamListSelect" name="streamListSelect" required>
+                                <option value="">Choose a stream list...</option>
+                            </select>
+                        </div>
+                        
+                        <div id="listVideos" class="list-videos-container" style="display: none;">
+                            <div class="upload-section">
+                                <h4>📤 Upload Videos to Selected List:</h4>
+                                <input type="file" id="videoFileInput" accept=".mp4,.mkv,.avi,.mov,.flv,.wmv,.m4v" multiple style="display: none">
+                                <button type="button" id="uploadBtn" class="btn btn-primary">📤 Choose Files to Upload</button>
+                                <div id="uploadProgress" class="upload-progress" style="display: none;">
+                                    <div class="progress-bar">
+                                        <div id="uploadBar" class="progress-fill"></div>
+                                    </div>
+                                    <span id="uploadStatus">Uploading...</span>
+                                </div>
+                            </div>
+                            
+                            <h4>Videos in Selected List:</h4>
+                            <div id="videosList" class="videos-list"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stream Controls Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>🎮 Stream Controls</h2>
+                </div>
+                <div class="card-body">
+                    <form id="streamForm">
+                        <div class="form-group">
+                            <label for="rtmpUrl">RTMP URL</label>
+                            <input type="text" id="rtmpUrl" name="rtmpUrl" 
+                                   placeholder="rtmp://live.twitch.tv/app" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="streamKey">Stream Key</label>
+                            <input type="text" id="streamKey" name="streamKey" 
+                                   placeholder="your-stream-key" required>
+                        </div>
+                        <div class="button-group">
+                            <button type="submit" id="startBtn" class="btn btn-success">▶️ Start Stream</button>
+                            <button type="button" id="stopBtn" class="btn btn-danger" disabled>⏹️ Stop Stream</button>
+                        </div>
+                        <div id="streamMessage" class="message"></div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- System Monitor Card -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>💻 System Monitor</h2>
+                </div>
+                <div class="card-body">
+                    <div class="monitor-grid">
+                        <!-- CPU Monitor -->
+                        <div class="monitor-item">
+                            <h3>CPU Usage</h3>
+                            <div class="progress-bar">
+                                <div id="cpuBar" class="progress-fill"></div>
+                            </div>
+                            <span id="cpuPercent" class="metric-value">0%</span>
+                        </div>
+
+                        <!-- RAM Monitor -->
+                        <div class="monitor-item">
+                            <h3>RAM Usage</h3>
+                            <div class="progress-bar">
+                                <div id="ramBar" class="progress-fill"></div>
+                            </div>
+                            <span id="ramPercent" class="metric-value">0%</span>
+                            <span id="ramDetails" class="metric-details">0 GB / 0 GB</span>
+                        </div>
+
+                        <!-- GPU Monitor -->
+                        <div class="monitor-item">
+                            <h3>GPU Usage</h3>
+                            <div class="progress-bar">
+                                <div id="gpuBar" class="progress-fill"></div>
+                            </div>
+                            <span id="gpuPercent" class="metric-value">0%</span>
+                            <span id="gpuDetails" class="metric-details">Temp: 0°C</span>
+                        </div>
+
+                        <!-- Disk Monitor -->
+                        <div class="monitor-item">
+                            <h3>Disk Usage</h3>
+                            <div class="progress-bar">
+                                <div id="diskBar" class="progress-fill"></div>
+                            </div>
+                            <span id="diskPercent" class="metric-value">0%</span>
+                            <span id="diskDetails" class="metric-details">0 GB / 0 GB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FFmpeg Process Monitor -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>⚙️ FFmpeg Process</h2>
+                </div>
+                <div class="card-body">
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <span class="label">Process Status:</span>
+                            <span id="processStatus" class="value">Not Running</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">CPU Usage:</span>
+                            <span id="processCpu" class="value">0%</span>
+                        </div>
+                        <div class="status-item">
+                            <span class="label">Memory Usage:</span>
+                            <span id="processMemory" class="value">0 MB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connection Status -->
+            <div class="card">
+                <div class="card-header">
+                    <h2>🔌 Connection Status</h2>
+                </div>
+                <div class="card-body">
+                    <div class="connection-status">
+                        <span id="wsStatus" class="status-badge status-inactive">Disconnected</span>
+                        <span id="lastUpdate" class="text-muted">Last update: Never</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            <div class="container">
+                <p>Wild Stream Hub v1.0.0 | Powered by FFmpeg & FastAPI</p>
+            </div>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+
